@@ -1,1 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catch the Falling Objects Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background-color: #222;
+      color: white;
+      text-align: center;
+    }
 
+    canvas {
+      display: block;
+      background-color: #111;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div id="score">Score: 0</div>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let paddle = {
+      x: canvas.width / 2 - 50,
+      y: canvas.height - 30,
+      width: 100,
+      height: 20,
+      speed: 7,
+      dx: 0,
+    };
+
+    let fallingObject = {
+      x: Math.random() * canvas.width,
+      y: 0,
+      radius: 15,
+      speed: 4,
+    };
+
+    let score = 0;
+
+    // Event Listeners for movement
+    document.addEventListener("keydown", movePaddle);
+    document.addEventListener("keyup", stopPaddle);
+
+    function movePaddle(e) {
+      if (e.key === "ArrowRight") paddle.dx = paddle.speed;
+      if (e.key === "ArrowLeft") paddle.dx = -paddle.speed;
+    }
+
+    function stopPaddle(e) {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") paddle.dx = 0;
+    }
+
+    // Update Game State
+    function update() {
+      clearCanvas();
+      drawPaddle();
+      drawFallingObject();
+      movePaddlePosition();
+      moveFallingObject();
+      checkCollision();
+      requestAnimationFrame(update);
+    }
+
+    // Clear the canvas
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Draw the paddle
+    function drawPaddle() {
+      ctx.fillStyle = "cyan";
+      ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    }
+
+    // Move the paddle
+    function movePaddlePosition() {
+      paddle.x += paddle.dx;
+
+      // Prevent the paddle from leaving the canvas
+      if (paddle.x < 0) paddle.x = 0;
+      if (paddle.x + paddle.width > canvas.width)
+        paddle.x = canvas.width - paddle.width;
+    }
+
+    // Draw the falling object
+    function drawFallingObject() {
+      ctx.beginPath();
+      ctx.arc(fallingObject.x, fallingObject.y, fallingObject.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "red";
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    // Move the falling object
+    function moveFallingObject() {
+      fallingObject.y += fallingObject.speed;
+
+      // Reset falling object if it falls off screen
+      if (fallingObject.y > canvas.height) {
+        resetFallingObject();
+      }
+    }
+
+    // Check for collisions
+    function checkCollision() {
+      if (
+        fallingObject.y + fallingObject.radius >= paddle.y &&
+        fallingObject.x >= paddle.x &&
+        fallingObject.x <= paddle.x + paddle.width
+      ) {
+        score++;
+        document.getElementById("score").innerText = "Score: " + score;
+        resetFallingObject();
+      }
+    }
+
+    // Reset the falling object
+    function resetFallingObject() {
+      fallingObject.x = Math.random() * canvas.width;
+      fallingObject.y = 0;
+      fallingObject.speed += 0.2; // Increase difficulty
+    }
+
+    // Start the game loop
+    update();
+  </script>
+</body>
+</html>
